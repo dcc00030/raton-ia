@@ -10,5 +10,5 @@ package mouserun.mouse;
  * @author dcasquel
  */
 public class RatonA {
-    
+    int adv;
 }
