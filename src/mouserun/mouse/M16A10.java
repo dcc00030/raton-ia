@@ -32,21 +32,21 @@ public class M16A10 extends Mouse {
 
     @Override
     public int move(Grid currentGrid, Cheese cheese) {
-        System.out.printf("%s\n", retrocediendo);
+//        System.out.printf("%s\n", retrocediendo);
 
         if (mapa.at(cheese.getX(), cheese.getY()) != 0) {
             if (abiertos.size() == 0) {
-                System.out.printf("Lista de abierto alla vamos!\n ");
+//                System.out.printf("Lista de abierto alla vamos!\n ");
                 abiertos.add(currentGrid);
             }
             if (currentGrid.getX() == cheese.getX() && currentGrid.getY() == cheese.getY()) {
-                System.out.printf("Encontre el queso!, nos limpiamos \n ");
+//                System.out.printf("Encontre el queso!, nos limpiamos \n ");
                 abiertos.clear();
                 retrocediendo = false;
                 cerrados.clear();
                 //deshacer.clear();
             } else if (retrocediendo && currentGrid == abiertos.get(0)) {
-                System.out.printf("Dejamos de retroceder porque estamos en la casilla objetivo\n ");
+//                System.out.printf("Dejamos de retroceder porque estamos en la casilla objetivo\n ");
                 retrocediendo = false;
                 //deshacer.clear();
                 deshacer.addAll(aux);
@@ -55,8 +55,8 @@ public class M16A10 extends Mouse {
                 retroceso = deshacer.size() - 1;
             } else {
                 if (retrocediendo) {
-                    System.out.printf("Retrocedemos \n ");
-                    System.out.printf("%s %s \n", deshacer.size(), retroceso);
+//                    System.out.printf("Retrocedemos \n ");
+//                    System.out.printf("%s %s \n", deshacer.size(), retroceso);
                     if (retroceso == deshacer.size()) {
                         retroceso--;
                     }
@@ -75,7 +75,7 @@ public class M16A10 extends Mouse {
                     }
                     return mov;
                 } else {
-                    System.out.printf("Expandimos casilla \n ");
+//                    System.out.printf("Expandimos casilla \n ");
                     if (currentGrid.canGoUp() && mapa.at(currentGrid.getX(), currentGrid.getY() + 1) != 0) {
                         if (false == cerrados.contains(casillas.at(currentGrid.getX(), currentGrid.getY() + 1))) {
                             abiertos.add(casillas.at(currentGrid.getX(), currentGrid.getY() + 1));
@@ -96,15 +96,15 @@ public class M16A10 extends Mouse {
                             abiertos.add(casillas.at(currentGrid.getX() + 1, currentGrid.getY()));
                         }
                     }
-                    System.out.printf("la casilla actual se manda a cerrados \n ");
+//                    System.out.printf("la casilla actual se manda a cerrados \n ");
                     cerrados.add(currentGrid);
-                    System.out.printf("%s \n ", abiertos.size());
+//                    System.out.printf("%s \n ", abiertos.size());
                     if (!abiertos.isEmpty()) {
                         abiertos.remove(0);
                     }
 
                     if (currentGrid.canGoUp() && casillas.at(currentGrid.getX(), currentGrid.getY() + 1) == abiertos.get(0)) {
-                        System.out.printf("movimiento abajo\n ");
+//                        System.out.printf("movimiento abajo\n ");
                         deshacer.add(2);
                         retroceso++;
                         return 1;
@@ -121,7 +121,7 @@ public class M16A10 extends Mouse {
                         retroceso++;
                         return 4;
                     } else {
-                        System.out.printf("La casilla no esta contigua, retrocedemos \n ");
+//                        System.out.printf("La casilla no esta contigua, retrocedemos \n ");
                         retrocediendo = true;
                     }
 
