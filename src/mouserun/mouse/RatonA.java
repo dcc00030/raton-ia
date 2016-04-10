@@ -5,10 +5,13 @@
  */
 package mouserun.mouse;
 
+import static java.lang.Math.abs;
 import mouserun.game.Mouse;
 import mouserun.game.Grid;
 import mouserun.game.Cheese;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 
 /**
  *
@@ -16,153 +19,210 @@ import java.util.ArrayList;
  */
 public class RatonA extends Mouse {
 
-    MDinamica mapa; //Mapa que almacena el nº de casillas visitadas 
+    MDinamica1 mapa; //Mapa que almacena el nº de casillas visitadas 
     int ultimoMovimiento;
-    ArrayList<Grid> cerrados, abiertos;
-    MGrid casillas; //Casillas por las que vamos pasando
+    ArrayList<Grid> cerrados;
+    MGrid1 casillas; //Casillas por las que vamos pasando
     ArrayList<Integer> deshacer;
-    boolean retrocediendo;
+    boolean bifurcacion;
     int retroceso;
     ArrayList<Integer> aux;
+    PriorityQueue<Grid> abiertos;
+
     public RatonA() {
         super("A*");
         ultimoMovimiento = 0;
-        mapa = new MDinamica(1);
-        casillas = new MGrid(1);
+        mapa = new MDinamica1(1);
+        casillas = new MGrid1(1);
         cerrados = new ArrayList();
-        abiertos = new ArrayList();
+        abiertos = new PriorityQueue(80, new Comparadora());
         deshacer = new ArrayList<Integer>();
-        retrocediendo = false;
+        bifurcacion = false;
         aux = new ArrayList<Integer>();
     }
 
     @Override
     public int move(Grid currentGrid, Cheese cheese) {
-        casillas.add(currentGrid);
-
-        if (mapa.at(currentGrid.getX(), currentGrid.getY()) == 0) {
-            incExploredGrids();
-        }
-        mapa.inc(currentGrid.getX(), currentGrid.getY());
-
-        int[] vPosibles = new int[10];
-        for (int i = 0; i < 10; i++) {
-            vPosibles[i] = 0;
-        }
-        int movPosibles = analizarMovimiento(currentGrid, vPosibles);
-        int m1, m2, m3;
-
-        switch (movPosibles) {
-            case 1:
-                ultimoMovimiento = vPosibles[0];
-
-                if (vPosibles[0] == 1) {
+        if (mapa.at(cheese.getX(), cheese.getY()) != 0) {
+            if (abiertos.size() == 0) {
+                abiertos.add(currentGrid);
+            }
+            System.out.printf("%s %s %s \n",abiertos.size(),cerrados.size(),deshacer.size());
+            cerrados.add(currentGrid);
+            abiertos.clear();
+            if (currentGrid.canGoUp() && mapa.at(currentGrid.getX(), currentGrid.getY() + 1) != 0) {
+                if (false == cerrados.contains(casillas.at(currentGrid.getX(), currentGrid.getY() + 1))) {
+                    abiertos.add(casillas.at(currentGrid.getX(), currentGrid.getY() + 1));
+                }
+            }
+            if (currentGrid.canGoDown() && mapa.at(currentGrid.getX(), currentGrid.getY() - 1) != 0) {
+                if (false == cerrados.contains(casillas.at(currentGrid.getX(), currentGrid.getY() - 1))) {
+                    abiertos.add(casillas.at(currentGrid.getX(), currentGrid.getY() - 1));
+                }
+            }
+            if (currentGrid.canGoLeft() && mapa.at(currentGrid.getX() - 1, currentGrid.getY()) != 0) {
+                if (false == cerrados.contains(casillas.at(currentGrid.getX() - 1, currentGrid.getY()))) {
+                    abiertos.add(casillas.at(currentGrid.getX() - 1, currentGrid.getY()));
+                }
+            }
+            if (currentGrid.canGoRight() && mapa.at(currentGrid.getX() + 1, currentGrid.getY()) != 0) {
+                if (false == cerrados.contains(casillas.at(currentGrid.getX() + 1, currentGrid.getY()))) {
+                    abiertos.add(casillas.at(currentGrid.getX() + 1, currentGrid.getY()));
+                }
+            }
+            if (abiertos.size() > 1 && bifurcacion == false) {
+                bifurcacion = true;
+            }
+            if(deshacer.size() == 0){
+                bifurcacion = false;
+            }
+            if (abiertos.size() == 0 && cerrados.size() != 0 && deshacer.size() != 0) {
+               int aux = deshacer.get(deshacer.size()-1);
+                deshacer.remove(deshacer.size() -1);
+                return aux;
+            }
+            if (abiertos.peek() == casillas.at(currentGrid.getX(), currentGrid.getY() + 1)) {
+                if (bifurcacion == true) {
                     deshacer.add(2);
                 }
-                if (vPosibles[0] == 2) {
+                    return 1;
+                
+            }
+
+            if (abiertos.peek() == casillas.at(currentGrid.getX(), currentGrid.getY() - 1)) {
+                if (bifurcacion == true) {
                     deshacer.add(1);
                 }
-                if (vPosibles[0] == 3) {
-                    deshacer.add(4);
-                }
-                if (vPosibles[0] == 4) {
+                    return 2;
+                
+            }
+            if (abiertos.peek() == casillas.at(currentGrid.getX() + 1, currentGrid.getY())) {
+                if (bifurcacion == true) {
                     deshacer.add(3);
                 }
-                retroceso++;
-                return vPosibles[0];
-
-            case 2:
-
-                m1 = obtenerMovimiento(vPosibles[0], currentGrid);
-                m2 = obtenerMovimiento(vPosibles[1], currentGrid);
-                if (m1 < m2) {
-                    ultimoMovimiento = vPosibles[0];
-                    if (vPosibles[0] == 1) {
-                        deshacer.add(2);
-                    }
-                    if (vPosibles[0] == 2) {
-                        deshacer.add(1);
-                    }
-                    if (vPosibles[0] == 3) {
-                        deshacer.add(4);
-                    }
-                    if (vPosibles[0] == 4) {
-                        deshacer.add(3);
-                    }
-                    retroceso++;
-                    return vPosibles[0];
-                } else if (m1 > m2) {
-                    if (vPosibles[1] == 1) {
-                        deshacer.add(2);
-                    }
-                    if (vPosibles[1] == 2) {
-                        deshacer.add(1);
-                    }
-                    if (vPosibles[1] == 3) {
-                        deshacer.add(4);
-                    }
-                    if (vPosibles[1] == 4) {
-                        deshacer.add(3);
-                    }
-                    ultimoMovimiento = vPosibles[1];
-                    retroceso++;
-                    return vPosibles[1];
-                } else if (ultimoMovimiento == vPosibles[0]) {
-
-                    ultimoMovimiento = vPosibles[0];
-                    if (vPosibles[0] == 1) {
-                        deshacer.add(2);
-                    }
-                    if (vPosibles[0] == 2) {
-                        deshacer.add(1);
-                    }
-                    if (vPosibles[0] == 3) {
-                        deshacer.add(4);
-                    }
-                    if (vPosibles[0] == 4) {
-                        deshacer.add(3);
-                    }
-                    retroceso++;
-                    return vPosibles[0];
-                } else {
-                    ultimoMovimiento = vPosibles[1];
-                    if (vPosibles[1] == 1) {
-                        deshacer.add(2);
-                    }
-                    if (vPosibles[1] == 2) {
-                        deshacer.add(1);
-                    }
-                    if (vPosibles[1] == 3) {
-                        deshacer.add(4);
-                    }
-                    if (vPosibles[1] == 4) {
-                        deshacer.add(3);
-                    }
-                    retroceso++;
-                    return vPosibles[1];
+                    return 4;
+                
+            }
+            if (abiertos.peek() == casillas.at(currentGrid.getX() - 1, currentGrid.getY())) {
+                if (bifurcacion == true) {
+                    deshacer.add(4);
                 }
+                    return 3;
+                
+            }
+        } else {
+            casillas.add(currentGrid);
 
-            default:
+            if (mapa.at(currentGrid.getX(), currentGrid.getY()) == 0) {
+                incExploredGrids();
+            }
+            mapa.inc(currentGrid.getX(), currentGrid.getY());
 
-                m1 = obtenerMovimiento(vPosibles[0], currentGrid);
-                m2 = obtenerMovimiento(vPosibles[1], currentGrid);
-                m3 = obtenerMovimiento(vPosibles[2], currentGrid);
-                int menor = m1;
-                int movimiento = vPosibles[0];
-                if (m2 < menor) {
-                    menor = m2;
-                    movimiento = vPosibles[1];
-                    if (m3 < menor) {
-                        menor = m3;
-                        movimiento = vPosibles[2];
-                    } else if (m3 == menor) {
-                        if (ultimoMovimiento != vPosibles[2]) {
-                            menor = m3;
-                            movimiento = vPosibles[2];
-                        }
+            int[] vPosibles = new int[10];
+            for (int i = 0; i < 10; i++) {
+                vPosibles[i] = 0;
+            }
+            int movPosibles = analizarMovimiento(currentGrid, vPosibles);
+            int m1, m2, m3;
+
+            switch (movPosibles) {
+                case 1:
+                    ultimoMovimiento = vPosibles[0];
+
+                    if (vPosibles[0] == 1) {
+                        deshacer.add(2);
                     }
-                } else if (m2 == menor) {
-                    if (ultimoMovimiento != vPosibles[1]) {
+                    if (vPosibles[0] == 2) {
+                        deshacer.add(1);
+                    }
+                    if (vPosibles[0] == 3) {
+                        deshacer.add(4);
+                    }
+                    if (vPosibles[0] == 4) {
+                        deshacer.add(3);
+                    }
+                    retroceso++;
+                    return vPosibles[0];
+
+                case 2:
+
+                    m1 = obtenerMovimiento(vPosibles[0], currentGrid);
+                    m2 = obtenerMovimiento(vPosibles[1], currentGrid);
+                    if (m1 < m2) {
+                        ultimoMovimiento = vPosibles[0];
+                        if (vPosibles[0] == 1) {
+                            deshacer.add(2);
+                        }
+                        if (vPosibles[0] == 2) {
+                            deshacer.add(1);
+                        }
+                        if (vPosibles[0] == 3) {
+                            deshacer.add(4);
+                        }
+                        if (vPosibles[0] == 4) {
+                            deshacer.add(3);
+                        }
+                        retroceso++;
+                        return vPosibles[0];
+                    } else if (m1 > m2) {
+                        if (vPosibles[1] == 1) {
+                            deshacer.add(2);
+                        }
+                        if (vPosibles[1] == 2) {
+                            deshacer.add(1);
+                        }
+                        if (vPosibles[1] == 3) {
+                            deshacer.add(4);
+                        }
+                        if (vPosibles[1] == 4) {
+                            deshacer.add(3);
+                        }
+                        ultimoMovimiento = vPosibles[1];
+                        retroceso++;
+                        return vPosibles[1];
+                    } else if (ultimoMovimiento == vPosibles[0]) {
+
+                        ultimoMovimiento = vPosibles[0];
+                        if (vPosibles[0] == 1) {
+                            deshacer.add(2);
+                        }
+                        if (vPosibles[0] == 2) {
+                            deshacer.add(1);
+                        }
+                        if (vPosibles[0] == 3) {
+                            deshacer.add(4);
+                        }
+                        if (vPosibles[0] == 4) {
+                            deshacer.add(3);
+                        }
+                        retroceso++;
+                        return vPosibles[0];
+                    } else {
+                        ultimoMovimiento = vPosibles[1];
+                        if (vPosibles[1] == 1) {
+                            deshacer.add(2);
+                        }
+                        if (vPosibles[1] == 2) {
+                            deshacer.add(1);
+                        }
+                        if (vPosibles[1] == 3) {
+                            deshacer.add(4);
+                        }
+                        if (vPosibles[1] == 4) {
+                            deshacer.add(3);
+                        }
+                        retroceso++;
+                        return vPosibles[1];
+                    }
+
+                default:
+
+                    m1 = obtenerMovimiento(vPosibles[0], currentGrid);
+                    m2 = obtenerMovimiento(vPosibles[1], currentGrid);
+                    m3 = obtenerMovimiento(vPosibles[2], currentGrid);
+                    int menor = m1;
+                    int movimiento = vPosibles[0];
+                    if (m2 < menor) {
                         menor = m2;
                         movimiento = vPosibles[1];
                         if (m3 < menor) {
@@ -174,40 +234,53 @@ public class RatonA extends Mouse {
                                 movimiento = vPosibles[2];
                             }
                         }
+                    } else if (m2 == menor) {
+                        if (ultimoMovimiento != vPosibles[1]) {
+                            menor = m2;
+                            movimiento = vPosibles[1];
+                            if (m3 < menor) {
+                                menor = m3;
+                                movimiento = vPosibles[2];
+                            } else if (m3 == menor) {
+                                if (ultimoMovimiento != vPosibles[2]) {
+                                    menor = m3;
+                                    movimiento = vPosibles[2];
+                                }
+                            }
+                        }
                     }
-                }
-                if (movimiento == 1) {
-                    deshacer.add(2);
-                }
-                if (movimiento == 2) {
-                    deshacer.add(1);
-                }
-                if (movimiento == 3) {
-                    deshacer.add(4);
-                }
-                if (movimiento == 4) {
-                    deshacer.add(3);
-                }
-                retroceso++;
-                return movimiento;
+                    if (movimiento == 1) {
+                        deshacer.add(2);
+                    }
+                    if (movimiento == 2) {
+                        deshacer.add(1);
+                    }
+                    if (movimiento == 3) {
+                        deshacer.add(4);
+                    }
+                    if (movimiento == 4) {
+                        deshacer.add(3);
+                    }
+                    retroceso++;
+                    return movimiento;
+
+            }
 
         }
-
+        return 5;
     }
 
     @Override
     public void newCheese() {
+        cerrados.clear();
+        deshacer.clear();
     }
 
     @Override
     public void respawned() {
     }
 
-
-    
-    
-
-   private int analizarMovimiento(Grid currentGrid, int[] movPosibles) {
+    private int analizarMovimiento(Grid currentGrid, int[] movPosibles) {
 
         int nPosibles = 0;
         if (currentGrid.canGoUp()) {
@@ -357,8 +430,14 @@ class MGrid1 {
         matriz[grid.getX()][grid.getY()] = grid;
 
     }
-
 }
 
-    
+class Comparadora implements Comparator<Grid> {
 
+    @Override
+    public int compare(Grid currentGrid, Grid cheese) {
+        return abs(currentGrid.getX() - cheese.getX()) + abs(currentGrid.getY() - cheese.getY());
+
+    }
+
+}

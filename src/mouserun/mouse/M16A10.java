@@ -124,8 +124,6 @@ public class M16A10 extends Mouse {
 //                        System.out.printf("La casilla no esta contigua, retrocedemos \n ");
                         retrocediendo = true;
                     }
-
-                    //retrocediendo = true;
                 }
             }
 
@@ -300,7 +298,9 @@ public class M16A10 extends Mouse {
 
     @Override
     public void respawned() {
-
+        abiertos.clear();
+        retrocediendo = false;
+        cerrados.clear();
     }
 
     private int analizarMovimiento(Grid currentGrid, int[] movPosibles) {
