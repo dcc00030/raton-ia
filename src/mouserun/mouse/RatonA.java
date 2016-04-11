@@ -45,100 +45,72 @@ public class RatonA extends Mouse {
     
     @Override
     public int move(Grid currentGrid, Cheese cheese) {
+        
+        //Actualizamos la posición del queso
         comp.setX(cheese.getX());
         comp.setY(cheese.getY());
-
+        
+        
+        //Si el queso está en una casilla que ya hemos visitado, activamos la
+        //búsqueda en A*
         if (mapa.at(cheese.getX(), cheese.getY()) != 0) {
-            
-            if (abiertos.size() == 0) {
-                System.out.print("El tamaño de abiertos es 0\n");
-                abiertos.add(currentGrid);
-                System.out.print("La casilla actual se ha añadido a abiertos\n");
-            }
-            
-            
+
+            //Consideramos la casilla actual visitada y la mandamos a cerrados
             cerrados.add(currentGrid);
+            
+            //Inicializamos la lista de abiertos, ya que meteremos las no
+            //exploradas y cogeremos la más cercana al queso
             abiertos.clear();
-            System.out.printf("Vamos a empezar a añadir casillas a abiertos\n");
+            
+            //Añadimos a abiertos las casillas adyacentes que satisfagan
+            //1- que han sido visitadas por lo menos una vez
+            //2- que no estan en cerrados
             if (currentGrid.canGoUp() && mapa.at(currentGrid.getX(), currentGrid.getY() + 1) != 0) {
-                System.out.print("Can go up y ya visitada\n");
                 if (false == cerrados.contains(casillas.at(currentGrid.getX(), currentGrid.getY() + 1))) {
                     abiertos.add(casillas.at(currentGrid.getX(), currentGrid.getY() + 1));
                 }
             }
             if (currentGrid.canGoDown() && mapa.at(currentGrid.getX(), currentGrid.getY() - 1) != 0) {
-                System.out.print("Can go down y ya visitada\n");
                 if (false == cerrados.contains(casillas.at(currentGrid.getX(), currentGrid.getY() - 1))) {
                     abiertos.add(casillas.at(currentGrid.getX(), currentGrid.getY() - 1));
                 }
             }
             if (currentGrid.canGoLeft() && mapa.at(currentGrid.getX() - 1, currentGrid.getY()) != 0) {
-                System.out.print("Can go left y ya visitada\n");
                 if (false == cerrados.contains(casillas.at(currentGrid.getX() - 1, currentGrid.getY()))) {
                     abiertos.add(casillas.at(currentGrid.getX() - 1, currentGrid.getY()));
                 }
             }
             if (currentGrid.canGoRight() && mapa.at(currentGrid.getX() + 1, currentGrid.getY()) != 0) {
-                System.out.print("Can go right y ya visitada\n");
                 if (false == cerrados.contains(casillas.at(currentGrid.getX() + 1, currentGrid.getY()))) {
                     abiertos.add(casillas.at(currentGrid.getX() + 1, currentGrid.getY()));
                 }
             }
-            System.out.print("Ya hemos añadido las casillas a abiertos\n");
-            if (abiertos.size() == 0){
-                System.out.print("Tamaño de abiertos igual a 0");
-                cerrados.clear();
-            }
-            if (abiertos.size() > 1 && bifurcacion == false) {
-                System.out.printf("Hay bifurcacion!\n");
-                bifurcacion = true;
-            }
-            if(deshacer.size() == 0){
-                bifurcacion = false;
-            }
-            System.out.printf("Va a salir un mensaje de que tenemos que deshacer si %s es 0, %s NO es 0 y tampoco lo es %s\n",abiertos.size(),cerrados.size(),deshacer.size());
-            if (abiertos.size() == 0 && cerrados.size() != 0 && deshacer.size() != 0) {
-                System.out.printf("tenemos que deshacer lo andado\n");
-               int aux = deshacer.get(deshacer.size()-1);
-                deshacer.remove(deshacer.size() -1);
-                return aux;
-            }
-            System.out.printf("%s %s\n",abiertos.peek().getX(),abiertos.peek().getY());
             
-            System.out.print("Hice el peek\n");
+            
+            //Si no hay ningun nodo en abiertos es que hacia donde podemos ir
+            //Ya hemos explorado (callejon sin salida)
+            //En ese caso nos olvidamos de los cerrados y volvemos a iniciar la
+            //Busqueda
+            if (abiertos.size() == 0){
+                cerrados.clear();
+                return 5;
+            }
+            
+            //Finalmente, nos movemos a la casilla de abiertos que nos deje
+            //más cerca del queso
             if (abiertos.peek() == casillas.at(currentGrid.getX(), currentGrid.getY() + 1)) {
-                
-                if (bifurcacion == true) {
-                    deshacer.add(2);
-                }
-                    System.out.print("Voy a subir\n");
                     return Mouse.UP;
-                
             }
 
             if (abiertos.peek() == casillas.at(currentGrid.getX(), currentGrid.getY() - 1)) {
-                if (bifurcacion == true) {
-                    deshacer.add(1);
-                }
-                System.out.print("Voy a bajar\n");
                     return Mouse.DOWN;
-                
             }
             if (abiertos.peek() == casillas.at(currentGrid.getX() + 1, currentGrid.getY())) {
-                if (bifurcacion == true) {
-                    deshacer.add(3);
-                }
-                System.out.print("Voy a la derecha\n");
                     return Mouse.RIGHT;
                 
             }
             if (abiertos.peek() == casillas.at(currentGrid.getX() - 1, currentGrid.getY())) {
-                if (bifurcacion == true) {
-                    deshacer.add(4);
-                }
-                System.out.print("Voy a la izquierda\n");
-                    return Mouse.LEFT;
-                
+                    return Mouse.LEFT;                
             }
         } else {
             casillas.add(currentGrid);
