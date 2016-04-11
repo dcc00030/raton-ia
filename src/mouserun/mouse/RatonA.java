@@ -24,7 +24,6 @@ public class RatonA extends Mouse {
     ArrayList<Grid> cerrados;
     MGrid1 casillas; //Casillas por las que vamos pasando
     ArrayList<Integer> deshacer;
-    boolean bifurcacion;
     int retroceso;
     ArrayList<Integer> aux;
     PriorityQueue<Grid> abiertos;
@@ -39,7 +38,6 @@ public class RatonA extends Mouse {
         comp = new Comparadora();
         abiertos = new PriorityQueue(80, comp);
         deshacer = new ArrayList<Integer>();
-        bifurcacion = false;
         aux = new ArrayList<Integer>();
     }
     
