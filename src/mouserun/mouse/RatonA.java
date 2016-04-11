@@ -28,6 +28,7 @@ public class RatonA extends Mouse {
     int retroceso;
     ArrayList<Integer> aux;
     PriorityQueue<Grid> abiertos;
+    Comparadora comp;
 
     public RatonA() {
         super("A*");
@@ -35,14 +36,18 @@ public class RatonA extends Mouse {
         mapa = new MDinamica1(1);
         casillas = new MGrid1(1);
         cerrados = new ArrayList();
-        abiertos = new PriorityQueue(80, new Comparadora());
+        comp = new Comparadora();
+        abiertos = new PriorityQueue(80, comp);
         deshacer = new ArrayList<Integer>();
         bifurcacion = false;
         aux = new ArrayList<Integer>();
     }
-
+    
     @Override
     public int move(Grid currentGrid, Cheese cheese) {
+        comp.setX(cheese.getX());
+        comp.setY(cheese.getY());
+
         if (mapa.at(cheese.getX(), cheese.getY()) != 0) {
             if (abiertos.size() == 0) {
                 abiertos.add(currentGrid);
@@ -50,33 +55,41 @@ public class RatonA extends Mouse {
             System.out.printf("%s %s %s \n",abiertos.size(),cerrados.size(),deshacer.size());
             cerrados.add(currentGrid);
             abiertos.clear();
+            
             if (currentGrid.canGoUp() && mapa.at(currentGrid.getX(), currentGrid.getY() + 1) != 0) {
+                System.out.print("Can go up y ya visitada\n");
                 if (false == cerrados.contains(casillas.at(currentGrid.getX(), currentGrid.getY() + 1))) {
                     abiertos.add(casillas.at(currentGrid.getX(), currentGrid.getY() + 1));
                 }
             }
             if (currentGrid.canGoDown() && mapa.at(currentGrid.getX(), currentGrid.getY() - 1) != 0) {
+                System.out.print("Can go down y ya visitada\n");
                 if (false == cerrados.contains(casillas.at(currentGrid.getX(), currentGrid.getY() - 1))) {
                     abiertos.add(casillas.at(currentGrid.getX(), currentGrid.getY() - 1));
                 }
             }
             if (currentGrid.canGoLeft() && mapa.at(currentGrid.getX() - 1, currentGrid.getY()) != 0) {
+                System.out.print("Can go left y ya visitada\n");
                 if (false == cerrados.contains(casillas.at(currentGrid.getX() - 1, currentGrid.getY()))) {
                     abiertos.add(casillas.at(currentGrid.getX() - 1, currentGrid.getY()));
                 }
             }
             if (currentGrid.canGoRight() && mapa.at(currentGrid.getX() + 1, currentGrid.getY()) != 0) {
+                System.out.print("Can go right y ya visitada\n");
                 if (false == cerrados.contains(casillas.at(currentGrid.getX() + 1, currentGrid.getY()))) {
                     abiertos.add(casillas.at(currentGrid.getX() + 1, currentGrid.getY()));
                 }
             }
+            if (abiertos.size() == 0) cerrados.clear();
             if (abiertos.size() > 1 && bifurcacion == false) {
+                System.out.printf("Hay bifurcacion!\n");
                 bifurcacion = true;
             }
             if(deshacer.size() == 0){
                 bifurcacion = false;
             }
             if (abiertos.size() == 0 && cerrados.size() != 0 && deshacer.size() != 0) {
+                System.out.printf("tenemos que deshacer lo andado\n");
                int aux = deshacer.get(deshacer.size()-1);
                 deshacer.remove(deshacer.size() -1);
                 return aux;
@@ -434,10 +447,25 @@ class MGrid1 {
 
 class Comparadora implements Comparator<Grid> {
 
+    private int x, y;
+    public void setX(int _x){
+        x = _x;
+    }
+    public void setY(int _y){
+        y = _y;
+    }
+    
+    public int manhatan(Grid currentGrid){
+        return abs(currentGrid.getX() - x) + abs(currentGrid.getY() - y);
+    }
     @Override
-    public int compare(Grid currentGrid, Grid cheese) {
-        return abs(currentGrid.getX() - cheese.getX()) + abs(currentGrid.getY() - cheese.getY());
-
+    public int compare(Grid currentGrid1, Grid currentGrid2) {
+        int d1 = manhatan(currentGrid1);
+        int d2 = manhatan(currentGrid2);
+        if (d1 < d2) return -1;
+        else if (d2 < d1) return 1;
+        else return 0;
+        
     }
 
 }
