@@ -1,3 +1,4 @@
+/*
 package mouserun.mouse;
 
 import mouserun.game.Mouse;
@@ -455,3 +456,4 @@ class MGrid {
     }
 
 }
+*/

@@ -49,13 +49,17 @@ public class RatonA extends Mouse {
         comp.setY(cheese.getY());
 
         if (mapa.at(cheese.getX(), cheese.getY()) != 0) {
+            
             if (abiertos.size() == 0) {
+                System.out.print("El tamaño de abiertos es 0\n");
                 abiertos.add(currentGrid);
+                System.out.print("La casilla actual se ha añadido a abiertos\n");
             }
-            System.out.printf("%s %s %s \n",abiertos.size(),cerrados.size(),deshacer.size());
+            
+            
             cerrados.add(currentGrid);
             abiertos.clear();
-            
+            System.out.printf("Vamos a empezar a añadir casillas a abiertos\n");
             if (currentGrid.canGoUp() && mapa.at(currentGrid.getX(), currentGrid.getY() + 1) != 0) {
                 System.out.print("Can go up y ya visitada\n");
                 if (false == cerrados.contains(casillas.at(currentGrid.getX(), currentGrid.getY() + 1))) {
@@ -80,7 +84,11 @@ public class RatonA extends Mouse {
                     abiertos.add(casillas.at(currentGrid.getX() + 1, currentGrid.getY()));
                 }
             }
-            if (abiertos.size() == 0) cerrados.clear();
+            System.out.print("Ya hemos añadido las casillas a abiertos\n");
+            if (abiertos.size() == 0){
+                System.out.print("Tamaño de abiertos igual a 0");
+                cerrados.clear();
+            }
             if (abiertos.size() > 1 && bifurcacion == false) {
                 System.out.printf("Hay bifurcacion!\n");
                 bifurcacion = true;
@@ -88,17 +96,23 @@ public class RatonA extends Mouse {
             if(deshacer.size() == 0){
                 bifurcacion = false;
             }
+            System.out.printf("Va a salir un mensaje de que tenemos que deshacer si %s es 0, %s NO es 0 y tampoco lo es %s\n",abiertos.size(),cerrados.size(),deshacer.size());
             if (abiertos.size() == 0 && cerrados.size() != 0 && deshacer.size() != 0) {
                 System.out.printf("tenemos que deshacer lo andado\n");
                int aux = deshacer.get(deshacer.size()-1);
                 deshacer.remove(deshacer.size() -1);
                 return aux;
             }
+            System.out.printf("%s %s\n",abiertos.peek().getX(),abiertos.peek().getY());
+            
+            System.out.print("Hice el peek\n");
             if (abiertos.peek() == casillas.at(currentGrid.getX(), currentGrid.getY() + 1)) {
+                
                 if (bifurcacion == true) {
                     deshacer.add(2);
                 }
-                    return 1;
+                    System.out.print("Voy a subir\n");
+                    return Mouse.UP;
                 
             }
 
@@ -106,21 +120,24 @@ public class RatonA extends Mouse {
                 if (bifurcacion == true) {
                     deshacer.add(1);
                 }
-                    return 2;
+                System.out.print("Voy a bajar\n");
+                    return Mouse.DOWN;
                 
             }
             if (abiertos.peek() == casillas.at(currentGrid.getX() + 1, currentGrid.getY())) {
                 if (bifurcacion == true) {
                     deshacer.add(3);
                 }
-                    return 4;
+                System.out.print("Voy a la derecha\n");
+                    return Mouse.RIGHT;
                 
             }
             if (abiertos.peek() == casillas.at(currentGrid.getX() - 1, currentGrid.getY())) {
                 if (bifurcacion == true) {
                     deshacer.add(4);
                 }
-                    return 3;
+                System.out.print("Voy a la izquierda\n");
+                    return Mouse.LEFT;
                 
             }
         } else {
@@ -430,9 +447,11 @@ class MGrid1 {
     }
 
     public Grid at(int x, int y) {
+        if ( x < 0 || y < 0 ) return new Grid(-1,-1);
         while (x >= TAM || y >= TAM) {
             aumentarMatriz();
         }
+        
         return matriz[x][y];
     }
 
